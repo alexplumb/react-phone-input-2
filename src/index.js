@@ -41,6 +41,11 @@ class ReactPhoneInput extends React.Component {
       PropTypes.func,
       PropTypes.object
     ]),
+    dropdownComponent: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.func,
+      PropTypes.object
+    ]),
 
     autoFormat: PropTypes.bool,
     disableAreaCodes: PropTypes.bool,
@@ -87,6 +92,7 @@ class ReactPhoneInput extends React.Component {
     buttonClass: '',
     dropdownClass: '',
     inputComponent: 'input',
+    dropdownComponent: 'div',
 
     autoFormat: true,
     disableAreaCodes: false,
@@ -719,7 +725,7 @@ class ReactPhoneInput extends React.Component {
 
   render() {
     const { selectedCountry, showDropdown, formattedNumber } = this.state;
-    const { inputComponent: Component } = this.props;
+    const { inputComponent: InputComponent, dropdownComponent: DropdownComponent } = this.props;
 
     const disableDropdown = this.props.disableDropdown;
 
@@ -741,7 +747,7 @@ class ReactPhoneInput extends React.Component {
       <div
         className={this.props.containerClass}
         style={this.props.containerStyle}>
-        <Component
+        <InputComponent
           placeholder={this.state.placeholder}
           onChange={this.handleInput}
           onClick={this.handleInputClick}
@@ -759,7 +765,7 @@ class ReactPhoneInput extends React.Component {
           style={this.props.inputStyle}
         />
 
-        <div
+        <DropdownComponent
           className={flagViewClasses}
           style={this.props.buttonStyle}
           onKeyDown={this.handleKeydown}
@@ -776,7 +782,7 @@ class ReactPhoneInput extends React.Component {
           </div>
 
           {showDropdown && this.getCountryDropdownList()}
-        </div>
+        </DropdownComponent>
       </div>
     );
   }
