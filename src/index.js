@@ -46,6 +46,7 @@ class ReactPhoneInput extends React.Component {
       PropTypes.func,
       PropTypes.object
     ]),
+    inputProps: PropTypes.object,
 
     autoFormat: PropTypes.bool,
     disableAreaCodes: PropTypes.bool,
@@ -416,7 +417,7 @@ class ReactPhoneInput extends React.Component {
 
   // Put the cursor to the end of the input (usually after a focus event)
   cursorToEnd = () => {
-    const input = this.numberInputRef;
+    const input = this.inputRef;
     input.focus();
     if (this.props.isModernBrowser) {
       const len = input.value.length;
@@ -526,10 +527,10 @@ class ReactPhoneInput extends React.Component {
         const lastChar = formattedNumber.charAt(formattedNumber.length - 1);
 
         if (lastChar == ')') {
-          this.numberInputRef.setSelectionRange(formattedNumber.length - 1, formattedNumber.length - 1);
+          this.inputRef.setSelectionRange(formattedNumber.length - 1, formattedNumber.length - 1);
         }
         else if (caretPosition > 0 && oldFormattedText.length >= formattedNumber.length) {
-          this.numberInputRef.setSelectionRange(caretPosition, caretPosition);
+          this.inputRef.setSelectionRange(caretPosition, caretPosition);
         }
       }
 
@@ -538,6 +539,26 @@ class ReactPhoneInput extends React.Component {
       }
     });
   }
+
+  handleRefInput = ref => {
+    this.inputRef = ref;
+
+    let refProp;
+
+    if (this.props.inputRef) {
+      refProp = this.props.inputRef;
+    } else if (this.props.inputProps && this.props.inputProps.ref) {
+      refProp = this.props.inputProps.ref;
+    }
+
+    if (refProp) {
+      if (typeof refProp === 'function') {
+        refProp(ref);
+      } else {
+        refProp.current = ref;
+      }
+    }
+  };
 
   handleInputClick = (e) => {
     this.setState({ showDropdown: false });
@@ -567,8 +588,8 @@ class ReactPhoneInput extends React.Component {
 
   handleInputFocus = (e) => {
     // if the input is blank, insert dial code of the selected country
-    if (this.numberInputRef) {
-      if (this.numberInputRef.value === '+' && this.state.selectedCountry && !this.props.disableCountryCode) {
+    if (this.inputRef) {
+      if (this.inputRef.value === '+' && this.state.selectedCountry && !this.props.disableCountryCode) {
         this.setState({
           formattedNumber: '+' + this.state.selectedCountry.dialCode
         }, () => setTimeout(this.cursorToEnd, 10));
@@ -725,7 +746,11 @@ class ReactPhoneInput extends React.Component {
 
   render() {
     const { selectedCountry, showDropdown, formattedNumber } = this.state;
-    const { inputComponent: InputComponent, dropdownComponent: DropdownComponent } = this.props;
+    const {
+      inputComponent: InputComponent,
+      dropdownComponent: DropdownComponent,
+      inputProps: { ...inputPropsProp } = {},
+    } = this.props;
 
     const disableDropdown = this.props.disableDropdown;
 
@@ -743,6 +768,19 @@ class ReactPhoneInput extends React.Component {
     });
     const inputFlagClasses = `flag ${selectedCountry.iso2}`;
 
+    let inputProps = {
+      ...inputPropsProp,
+      ref: this.handleRefInput,
+    };
+
+    if (typeof InputComponent !== 'string') {
+      inputProps = {
+        inputRef: this.handleRefInput,
+        ...inputProps,
+        ref: null,
+      };
+    }
+
     return (
       <div
         className={this.props.containerClass}
@@ -755,7 +793,6 @@ class ReactPhoneInput extends React.Component {
           onBlur={this.handleInputBlur}
           onKeyDown={this.handleInputKeyDown}
           value={formattedNumber}
-          ref={el => this.numberInputRef = el}
           type="tel"
           className={inputClasses}
           required={this.props.required}
@@ -763,6 +800,7 @@ class ReactPhoneInput extends React.Component {
           autoFocus={this.props.autoFocus}
           name={this.props.name}
           style={this.props.inputStyle}
+          {...inputProps}
         />
 
         <DropdownComponent
