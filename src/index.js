@@ -713,6 +713,8 @@ class ReactPhoneInput extends React.Component {
 
   render() {
     const { selectedCountry, showDropdown, formattedNumber } = this.state;
+    const { inputComponent: Component } = this.props;
+
     const disableDropdown = this.props.disableDropdown;
 
     const arrowClasses = classNames({"arrow": true, "up": showDropdown});
@@ -733,23 +735,43 @@ class ReactPhoneInput extends React.Component {
       <div
         className={this.props.containerClass}
         style={this.props.containerStyle}>
-        <input
-          placeholder={this.state.placeholder}
-          onChange={this.handleInput}
-          onClick={this.handleInputClick}
-          onFocus={this.handleInputFocus}
-          onBlur={this.handleInputBlur}
-          onKeyDown={this.handleInputKeyDown}
-          value={formattedNumber}
-          ref={el => this.numberInputRef = el}
-          type="tel"
-          className={inputClasses}
-          required={this.props.required}
-          disabled={this.props.disabled}
-          autoFocus={this.props.autoFocus}
-          name={this.props.name}
-          style={this.props.inputStyle}
-        />
+        {Component ? (
+          <Component
+            placeholder={this.state.placeholder}
+            onChange={this.handleInput}
+            onClick={this.handleInputClick}
+            onFocus={this.handleInputFocus}
+            onBlur={this.handleInputBlur}
+            onKeyDown={this.handleInputKeyDown}
+            value={formattedNumber}
+            ref={el => this.numberInputRef = el}
+            type="tel"
+            className={inputClasses}
+            required={this.props.required}
+            disabled={this.props.disabled}
+            autoFocus={this.props.autoFocus}
+            name={this.props.name}
+            style={this.props.inputStyle}
+          />
+        ) : (
+          <input
+            placeholder={this.state.placeholder}
+            onChange={this.handleInput}
+            onClick={this.handleInputClick}
+            onFocus={this.handleInputFocus}
+            onBlur={this.handleInputBlur}
+            onKeyDown={this.handleInputKeyDown}
+            value={formattedNumber}
+            ref={el => this.numberInputRef = el}
+            type="tel"
+            className={inputClasses}
+            required={this.props.required}
+            disabled={this.props.disabled}
+            autoFocus={this.props.autoFocus}
+            name={this.props.name}
+            style={this.props.inputStyle}
+          />
+        )}
 
         <div
           className={flagViewClasses}
