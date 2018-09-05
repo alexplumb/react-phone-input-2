@@ -750,7 +750,6 @@ class MaterialReactPhoneInput extends React.Component {
         required={this.props.required}
         disabled={this.props.disabled}
         autoFocus={this.props.autoFocus}
-        name={this.props.name}
         inputRef={this.handleRefInput}
         type="tel"
         startAdornment={(
@@ -771,6 +770,7 @@ class MaterialReactPhoneInput extends React.Component {
             {this.getCountryDropdownList()}
           </InputAdornment>
         )}
+        {...this.props}
       />
     );
   }
