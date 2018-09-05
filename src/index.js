@@ -36,6 +36,11 @@ class ReactPhoneInput extends React.Component {
     inputClass: PropTypes.string,
     buttonClass: PropTypes.string,
     dropdownClass: PropTypes.string,
+    inputComponent: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.func,
+      PropTypes.object
+    ]),
 
     autoFormat: PropTypes.bool,
     disableAreaCodes: PropTypes.bool,
@@ -81,6 +86,7 @@ class ReactPhoneInput extends React.Component {
     inputClass: '',
     buttonClass: '',
     dropdownClass: '',
+    inputComponent: 'input',
 
     autoFormat: true,
     disableAreaCodes: false,
@@ -735,43 +741,23 @@ class ReactPhoneInput extends React.Component {
       <div
         className={this.props.containerClass}
         style={this.props.containerStyle}>
-        {Component ? (
-          <Component
-            placeholder={this.state.placeholder}
-            onChange={this.handleInput}
-            onClick={this.handleInputClick}
-            onFocus={this.handleInputFocus}
-            onBlur={this.handleInputBlur}
-            onKeyDown={this.handleInputKeyDown}
-            value={formattedNumber}
-            ref={el => this.numberInputRef = el}
-            type="tel"
-            className={inputClasses}
-            required={this.props.required}
-            disabled={this.props.disabled}
-            autoFocus={this.props.autoFocus}
-            name={this.props.name}
-            style={this.props.inputStyle}
-          />
-        ) : (
-          <input
-            placeholder={this.state.placeholder}
-            onChange={this.handleInput}
-            onClick={this.handleInputClick}
-            onFocus={this.handleInputFocus}
-            onBlur={this.handleInputBlur}
-            onKeyDown={this.handleInputKeyDown}
-            value={formattedNumber}
-            ref={el => this.numberInputRef = el}
-            type="tel"
-            className={inputClasses}
-            required={this.props.required}
-            disabled={this.props.disabled}
-            autoFocus={this.props.autoFocus}
-            name={this.props.name}
-            style={this.props.inputStyle}
-          />
-        )}
+        <Component
+          placeholder={this.state.placeholder}
+          onChange={this.handleInput}
+          onClick={this.handleInputClick}
+          onFocus={this.handleInputFocus}
+          onBlur={this.handleInputBlur}
+          onKeyDown={this.handleInputKeyDown}
+          value={formattedNumber}
+          ref={el => this.numberInputRef = el}
+          type="tel"
+          className={inputClasses}
+          required={this.props.required}
+          disabled={this.props.disabled}
+          autoFocus={this.props.autoFocus}
+          name={this.props.name}
+          style={this.props.inputStyle}
+        />
 
         <div
           className={flagViewClasses}
