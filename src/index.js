@@ -170,7 +170,6 @@ class MaterialReactPhoneInput extends React.Component {
       selectedCountry: countryGuess,
       highlightCountryIndex: countryGuessIndex,
       queryString: '',
-      showDropdown: false,
       freezeSelection: false,
       debouncedQueryStingSearcher: debounce(this.searchCountry, 100),
       anchorEl: null,
@@ -179,14 +178,12 @@ class MaterialReactPhoneInput extends React.Component {
 
   componentDidMount() {
     if (document.addEventListener) {
-      document.addEventListener('mousedown', this.handleClickOutside);
       document.addEventListener('keydown', this.handleKeydown);
     }
   }
 
   componentWillUnmount() {
     if (document.removeEventListener) {
-      document.removeEventListener('mousedown', this.handleClickOutside);
       document.removeEventListener('keydown', this.handleKeydown);
     }
   }
@@ -435,24 +432,22 @@ class MaterialReactPhoneInput extends React.Component {
   }
 
   handleFlagDropdownClick = () => {
-    if (!this.state.showDropdown && this.props.disabled) return;
+    if (!this.state.anchorEl && this.props.disabled) return;
 
     if (this.state.preferredCountries.includes(this.state.selectedCountry)) {
       this.setState({
-        showDropdown: !this.state.showDropdown,
         highlightCountryIndex: findIndex(this.state.preferredCountries, this.state.selectedCountry)
       }, () => {
-        if (this.state.showDropdown) {
+        if (this.state.anchorEl) {
           this.scrollTo(this.getElement(this.state.highlightCountryIndex));
         }
       });
     }
     else {
       this.setState({
-        showDropdown: !this.state.showDropdown,
         highlightCountryIndex: findIndex(this.state.onlyCountries, this.state.selectedCountry)
       }, () => {
-        if (this.state.showDropdown) {
+        if (this.state.anchorEl) {
           this.scrollTo(this.getElement(this.state.highlightCountryIndex + this.state.preferredCountries.length));
         }
       });
@@ -556,7 +551,6 @@ class MaterialReactPhoneInput extends React.Component {
   };
 
   handleInputClick = (e) => {
-    this.setState({ showDropdown: false });
     if (this.props.onClick) this.props.onClick(e, this.getCountryData());
   }
 
@@ -569,7 +563,7 @@ class MaterialReactPhoneInput extends React.Component {
     const formattedNumber = this.formatNumber(newNumber.replace(/\D/g, ''), nextSelectedCountry.format);
 
     this.setState({
-      showDropdown: false,
+      anchorEl: null,
       selectedCountry: nextSelectedCountry,
       freezeSelection: true,
       formattedNumber
@@ -624,7 +618,7 @@ class MaterialReactPhoneInput extends React.Component {
 
   handleKeydown = (e) => {
     const { keys } = this.props;
-    if (!this.state.showDropdown || this.props.disabled) return;
+    if (!this.state.anchorEl || this.props.disabled) return;
 
     // ie hack
     if (e.preventDefault) {
@@ -655,7 +649,7 @@ class MaterialReactPhoneInput extends React.Component {
         break;
       case keys.ESC:
         this.setState({
-          showDropdown: false
+          anchorEl: null,
         }, this.cursorToEnd);
         break;
       default:
@@ -676,14 +670,8 @@ class MaterialReactPhoneInput extends React.Component {
     if (this.props.onKeyDown) this.props.onKeyDown(e);
   }
 
-  handleClickOutside = (e) => {
-    if (this.dropdownRef && !this.dropdownContainerRef.contains(e.target)) {
-      this.state.showDropdown && this.setState({ showDropdown: false });
-    }
-  }
-
   getCountryDropdownList = () => {
-    const { preferredCountries, onlyCountries, highlightCountryIndex, showDropdown } = this.state;
+    const { preferredCountries, onlyCountries, highlightCountryIndex, anchorEl } = this.state;
 
     const countryIsPreferred = this.state.preferredCountries.includes(this.state.selectedCountry);
 
@@ -725,13 +713,15 @@ class MaterialReactPhoneInput extends React.Component {
     const dropDownClasses = classNames({
       [this.props.dropdownClass]: true,
       'country-list': true,
-      'hide': !showDropdown
     });
 
     return (
       <Menu
+        id="country-menu"
         ref={el => this.dropdownRef = el}
         className={dropDownClasses}
+        open={Boolean(anchorEl)}
+        onClose={() => {this.setState({ anchorEl: null });}}
       >
         {countryDropdownList}
       </Menu>
@@ -739,7 +729,7 @@ class MaterialReactPhoneInput extends React.Component {
   }
 
   render() {
-    const { selectedCountry, showDropdown, formattedNumber, anchorEl } = this.state;
+    const { selectedCountry, formattedNumber, anchorEl } = this.state;
 
     const inputClasses = classNames({
       [this.props.inputClass]: true,
@@ -778,7 +768,7 @@ class MaterialReactPhoneInput extends React.Component {
               <div className={inputFlagClasses} />
             </Button>
 
-            {showDropdown && this.getCountryDropdownList()}
+            {this.getCountryDropdownList()}
           </InputAdornment>
         )}
       />
