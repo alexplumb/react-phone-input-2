@@ -1,5 +1,4 @@
-// TODO - fix the onlyContries props. Currently expects that as an array of country object, but users should be able to send in array of country isos
-import { TextField, InputAdornment, Menu, MenuItem, Button } from '@material-ui/core';
+import { TextField, InputAdornment, Menu, MenuItem, Button, withStyles } from '@material-ui/core';
 import { some, find, reduce, map, filter, includes } from 'lodash/collection';
 import { findIndex, head, tail } from 'lodash/array';
 import { debounce, memoize } from 'lodash/function';
@@ -9,6 +8,20 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { document } from './global.js';
 import countryData from './country_data.js';
+import './styles.less';
+import './flags.png';
+
+const styles = () => ({
+  flag: {
+    height: 16,
+    width: 11,
+    background: 'url("./flags.png")',
+  },
+  flagButton: {
+    minWidth: 30,
+    padding: 0,
+  }
+});
 
 class MaterialReactPhoneInput extends React.Component {
   static propTypes = {
@@ -672,7 +685,6 @@ class MaterialReactPhoneInput extends React.Component {
 
   getCountryDropdownList = () => {
     const { preferredCountries, onlyCountries, highlightCountryIndex, anchorEl } = this.state;
-
     const countryIsPreferred = this.state.preferredCountries.includes(this.state.selectedCountry);
 
     let countryDropdownList = map(preferredCountries.concat(onlyCountries), (country, index) => {
@@ -683,7 +695,7 @@ class MaterialReactPhoneInput extends React.Component {
         highlight: countryIsPreferred ? highlightCountryIndex === index : highlightCountryIndex === index - preferredCountries.length
       });
 
-      const inputFlagClasses = `flag ${country.iso2}`;
+      const inputFlagClasses = `flag ${country.iso2} margin`;
 
       return (
         <MenuItem
@@ -730,6 +742,7 @@ class MaterialReactPhoneInput extends React.Component {
 
   render() {
     const { selectedCountry, formattedNumber, anchorEl } = this.state;
+    const { classes } = this.props;
 
     const inputClasses = classNames({
       [this.props.inputClass]: true,
@@ -757,6 +770,7 @@ class MaterialReactPhoneInput extends React.Component {
           startAdornment: (
             <InputAdornment position="start" ref={el => this.dropdownContainerRef = el}>
               <Button
+                className={classes.flagButton}
                 aria-owns={anchorEl ? 'country-menu' : null}
                 aria-label="Select country"
                 onClick={(event) => {
@@ -779,6 +793,8 @@ class MaterialReactPhoneInput extends React.Component {
   }
 }
 
-export default MaterialReactPhoneInput;
+const PhoneInput = withStyles(styles)(MaterialReactPhoneInput);
+
+export default PhoneInput;
 
 if (__DEV__) require('./demo.js');
