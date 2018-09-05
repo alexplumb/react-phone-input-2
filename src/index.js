@@ -1,5 +1,5 @@
 // TODO - fix the onlyContries props. Currently expects that as an array of country object, but users should be able to send in array of country isos
-import { Input, InputAdornment, Menu, MenuItem, Button } from '@material-ui/core';
+import { TextField, InputAdornment, Menu, MenuItem, Button } from '@material-ui/core';
 import { some, find, reduce, map, filter, includes } from 'lodash/collection';
 import { findIndex, head, tail } from 'lodash/array';
 import { debounce, memoize } from 'lodash/function';
@@ -738,7 +738,7 @@ class MaterialReactPhoneInput extends React.Component {
     const inputFlagClasses = `flag ${selectedCountry.iso2}`;
 
     return (
-      <Input
+      <TextField
         placeholder={this.state.placeholder}
         onChange={this.handleInput}
         onClick={this.handleInputClick}
@@ -751,26 +751,29 @@ class MaterialReactPhoneInput extends React.Component {
         disabled={this.props.disabled}
         autoFocus={this.props.autoFocus}
         inputRef={this.handleRefInput}
-        type="tel"
-        startAdornment={(
-          <InputAdornment position="start" ref={el => this.dropdownContainerRef = el}>
-            <Button
-              aria-owns={anchorEl ? 'country-menu' : null}
-              aria-label="Select country"
-              onClick={(event) => {
-                this.setState({ anchorEl: event.currentTarget });
-                this.handleFlagDropdownClick(event);
-              }}
-              ref={el => this.dropdownContainerRef = el}
-              aria-haspopup
-            >
-              <div className={inputFlagClasses} />
-            </Button>
+        name={this.props.name}
+        label={this.props.label}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start" ref={el => this.dropdownContainerRef = el}>
+              <Button
+                aria-owns={anchorEl ? 'country-menu' : null}
+                aria-label="Select country"
+                onClick={(event) => {
+                  this.setState({ anchorEl: event.currentTarget });
+                  this.handleFlagDropdownClick(event);
+                }}
+                ref={el => this.dropdownContainerRef = el}
+                aria-haspopup
+              >
+                <div className={inputFlagClasses} />
+              </Button>
 
-            {this.getCountryDropdownList()}
-          </InputAdornment>
-        )}
-        {...this.props}
+              {this.getCountryDropdownList()}
+            </InputAdornment>
+          )
+        }}
+        type="tel"
       />
     );
   }
