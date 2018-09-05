@@ -1,5 +1,5 @@
 // TODO - fix the onlyContries props. Currently expects that as an array of country object, but users should be able to send in array of country isos
-
+import { Input, InputAdornment, Menu, MenuItem, Button } from '@material-ui/core';
 import { some, find, reduce, map, filter, includes } from 'lodash/collection';
 import { findIndex, head, tail } from 'lodash/array';
 import { debounce, memoize } from 'lodash/function';
@@ -8,12 +8,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { document } from './global.js';
-
 import countryData from './country_data.js';
 
-import './styles.less';
-
-class ReactPhoneInput extends React.Component {
+class MaterialReactPhoneInput extends React.Component {
   static propTypes = {
     excludeCountries: PropTypes.arrayOf(PropTypes.string),
     onlyCountries: PropTypes.arrayOf(PropTypes.string),
@@ -27,12 +24,10 @@ class ReactPhoneInput extends React.Component {
     disabled: PropTypes.bool,
     autoFocus: PropTypes.bool,
 
-    containerStyle: PropTypes.object,
     inputStyle: PropTypes.object,
     buttonStyle: PropTypes.object,
     dropdownStyle: PropTypes.object,
 
-    containerClass: PropTypes.string,
     inputClass: PropTypes.string,
     buttonClass: PropTypes.string,
     dropdownClass: PropTypes.string,
@@ -88,7 +83,6 @@ class ReactPhoneInput extends React.Component {
     buttonStyle: {},
     dropdownStyle: {},
 
-    containerClass: 'react-tel-input',
     inputClass: '',
     buttonClass: '',
     dropdownClass: '',
@@ -178,7 +172,8 @@ class ReactPhoneInput extends React.Component {
       queryString: '',
       showDropdown: false,
       freezeSelection: false,
-      debouncedQueryStingSearcher: debounce(this.searchCountry, 100)
+      debouncedQueryStingSearcher: debounce(this.searchCountry, 100),
+      anchorEl: null,
     };
   }
 
@@ -526,7 +521,7 @@ class ReactPhoneInput extends React.Component {
 
         const lastChar = formattedNumber.charAt(formattedNumber.length - 1);
 
-        if (lastChar == ')') {
+        if (lastChar === ')') {
           this.inputRef.setSelectionRange(formattedNumber.length - 1, formattedNumber.length - 1);
         }
         else if (caretPosition > 0 && oldFormattedText.length >= formattedNumber.length) {
@@ -703,7 +698,7 @@ class ReactPhoneInput extends React.Component {
       const inputFlagClasses = `flag ${country.iso2}`;
 
       return (
-        <li
+        <MenuItem
           ref={el => this[`flag_no_${index}`] = el}
           key={`flag_no_${index}`}
           data-flag-key={`flag_no_${index}`}
@@ -718,7 +713,7 @@ class ReactPhoneInput extends React.Component {
               this.props.localization[country.name] : country.name
           }</span>
           <span className='dial-code'>{'+' + country.dialCode}</span>
-        </li>
+        </MenuItem>
       );
     });
 
@@ -734,98 +729,63 @@ class ReactPhoneInput extends React.Component {
     });
 
     return (
-      <ul
+      <Menu
         ref={el => this.dropdownRef = el}
         className={dropDownClasses}
-        style={this.props.dropdownStyle}
       >
         {countryDropdownList}
-      </ul>
+      </Menu>
     );
   }
 
   render() {
-    const { selectedCountry, showDropdown, formattedNumber } = this.state;
-    const {
-      inputComponent: InputComponent,
-      dropdownComponent: DropdownComponent,
-      inputProps: { ...inputPropsProp } = {},
-    } = this.props;
+    const { selectedCountry, showDropdown, formattedNumber, anchorEl } = this.state;
 
-    const disableDropdown = this.props.disableDropdown;
-
-    const arrowClasses = classNames({"arrow": true, "up": showDropdown});
     const inputClasses = classNames({
       [this.props.inputClass]: true,
-      "form-control": true,
       "invalid-number": !this.props.isValid(formattedNumber.replace(/\D/g, ''))
-    });
-
-    const flagViewClasses = classNames({
-      [this.props.buttonClass]: true,
-      "flag-dropdown": true,
-      "open-dropdown": showDropdown
     });
     const inputFlagClasses = `flag ${selectedCountry.iso2}`;
 
-    let inputProps = {
-      ...inputPropsProp,
-      ref: this.handleRefInput,
-    };
-
-    if (typeof InputComponent !== 'string') {
-      inputProps = {
-        inputRef: this.handleRefInput,
-        ...inputProps,
-        ref: null,
-      };
-    }
-
     return (
-      <div
-        className={this.props.containerClass}
-        style={this.props.containerStyle}>
-        <InputComponent
-          placeholder={this.state.placeholder}
-          onChange={this.handleInput}
-          onClick={this.handleInputClick}
-          onFocus={this.handleInputFocus}
-          onBlur={this.handleInputBlur}
-          onKeyDown={this.handleInputKeyDown}
-          value={formattedNumber}
-          type="tel"
-          className={inputClasses}
-          required={this.props.required}
-          disabled={this.props.disabled}
-          autoFocus={this.props.autoFocus}
-          name={this.props.name}
-          style={this.props.inputStyle}
-          {...inputProps}
-        />
+      <Input
+        placeholder={this.state.placeholder}
+        onChange={this.handleInput}
+        onClick={this.handleInputClick}
+        onFocus={this.handleInputFocus}
+        onBlur={this.handleInputBlur}
+        onKeyDown={this.handleInputKeyDown}
+        value={formattedNumber}
+        className={inputClasses}
+        required={this.props.required}
+        disabled={this.props.disabled}
+        autoFocus={this.props.autoFocus}
+        name={this.props.name}
+        inputRef={this.handleRefInput}
+        type="tel"
+        startAdornment={(
+          <InputAdornment position="start" ref={el => this.dropdownContainerRef = el}>
+            <Button
+              aria-owns={anchorEl ? 'country-menu' : null}
+              aria-label="Select country"
+              onClick={(event) => {
+                this.setState({ anchorEl: event.currentTarget });
+                this.handleFlagDropdownClick(event);
+              }}
+              ref={el => this.dropdownContainerRef = el}
+              aria-haspopup
+            >
+              <div className={inputFlagClasses} />
+            </Button>
 
-        <DropdownComponent
-          className={flagViewClasses}
-          style={this.props.buttonStyle}
-          onKeyDown={this.handleKeydown}
-          ref={el => this.dropdownContainerRef = el}
-        >
-          <div
-            onClick={disableDropdown ? undefined : this.handleFlagDropdownClick}
-            className='selected-flag'
-            title={selectedCountry ? `${selectedCountry.name}: + ${selectedCountry.dialCode}` : ''}
-          >
-            <div className={inputFlagClasses}>
-              {!disableDropdown && <div className={arrowClasses}></div>}
-            </div>
-          </div>
-
-          {showDropdown && this.getCountryDropdownList()}
-        </DropdownComponent>
-      </div>
+            {showDropdown && this.getCountryDropdownList()}
+          </InputAdornment>
+        )}
+      />
     );
   }
 }
 
-export default ReactPhoneInput;
+export default MaterialReactPhoneInput;
 
 if (__DEV__) require('./demo.js');
